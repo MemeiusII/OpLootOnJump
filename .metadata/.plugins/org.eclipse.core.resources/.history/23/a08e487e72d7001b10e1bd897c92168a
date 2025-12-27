@@ -1,0 +1,57 @@
+package me.EthanBilbrey.OpLootOnJump;
+
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public class Main extends JavaPlugin implements Listener
+{
+	public boolean isJumping;
+	
+	@Override
+	public void onEnable() 
+	{
+		ItemStack opboots = new ItemStack(Material.IRON_BOOTS);
+		ItemMeta meta = opboots.getItemMeta();
+		meta.setDisplayName("OP boots");
+		opboots.setItemMeta(meta);
+		opboots.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
+		ShapedRecipe recipe = new ShapedRecipe(opboots);
+	}
+	
+	@EventHandler
+	public void onPlayerMove(PlayerMoveEvent e) 
+	{
+		if(e.getPlayer().getVelocity().getY() > 0.0
+				&& !e.getPlayer().isFlying() 
+				&& !e.getPlayer().isGliding() 
+				&& !e.getPlayer().isSwimming()
+				&& !isJumping)
+		{
+			isJumping = true;
+			Location loc = e.getPlayer().getLocation();
+			ItemStack item = ItemSelector.getRandItem();
+			if(item.getType().equals(Material.OAK_LOG) || item.getType().equals(Material.OBSIDIAN) || item.getType().equals(Material.ARROW)) 
+			{
+				for(int i =0; i < 64; i++) 
+				{
+					loc.getWorld().dropItem(loc, item);
+				}
+			}
+			else 
+			{
+				loc.getWorld().dropItem(loc, item);
+			}
+		}
+		else 
+		{
+			isJumping = false;
+		}
+	}
+}

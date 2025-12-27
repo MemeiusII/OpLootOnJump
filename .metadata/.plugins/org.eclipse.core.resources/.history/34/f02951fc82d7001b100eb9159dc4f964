@@ -1,0 +1,81 @@
+package me.EthanBilbrey.OpLootOnJump;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public class Main extends JavaPlugin implements Listener
+{
+	
+	@Override
+	public void onEnable() 
+	{
+		getServer().getPluginManager().registerEvents(this, this);
+		
+		ItemStack opboots = new ItemStack(Material.IRON_BOOTS);
+		ItemMeta meta = opboots.getItemMeta();
+		List<String> item_lore = new ArrayList<String>();
+		item_lore.add("OP Item");
+		item_lore.add("Uses left : 250");
+		meta.setLore(item_lore);
+		opboots.setItemMeta(meta);
+		opboots.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
+		@SuppressWarnings("deprecation")
+		ShapedRecipe recipe = new ShapedRecipe(opboots);
+		recipe.shape("cic","ibi", "cic");
+		recipe.setIngredient('c', Material.COAL);
+		recipe.setIngredient('i', Material.IRON_INGOT);
+		recipe.setIngredient('b', Material.IRON_BOOTS);
+		this.getServer().addRecipe(recipe);
+	}
+	
+	@EventHandler
+	public void onPlayerMove(PlayerMoveEvent e) 
+	{
+		if(e.getPlayer().getInventory().getBoots() != null
+				&& !e.getPlayer().getInventory().getBoots().getItemMeta().getLore().isEmpty() 
+				&& e.getPlayer().getInventory().getBoots().getItemMeta().getLore().contains("OP Item")) 
+		{
+			if(e.getPlayer().getVelocity().getY() > 0.4
+					&& !e.getPlayer().isFlying() 
+					&& !e.getPlayer().isGliding() 
+					&& !e.getPlayer().isSwimming())
+			{
+				//Update lore
+				ItemMeta meta = e.getPlayer().getInventory().getBoots().getItemMeta();
+				List<String> lore = new ArrayList<String>();
+				String uses = lore.get(1);
+				String numStr = uses.substring(uses.indexOf(':') + 1, uses.length());
+				int num = Integer.parseInt(numStr);
+				lore.remove(1);
+				lore.add("Uses left : " + num);
+				meta.setLore(lore);
+				e.getPlayer().getInventory().getBoots().setItemMeta(meta);
+				
+				Location loc = e.getPlayer().getLocation();
+				ItemStack item = ItemSelector.getRandItem();
+				if(item.getType().equals(Material.OAK_LOG) || item.getType().equals(Material.OBSIDIAN) || item.getType().equals(Material.ARROW)) 
+				{
+					for(int i =0; i < 64; i++) 
+					{
+						loc.getWorld().dropItem(loc, item);
+					}
+				}
+				else 
+				{
+					loc.getWorld().dropItem(loc, item);
+				}
+			}
+		}
+	}
+}
